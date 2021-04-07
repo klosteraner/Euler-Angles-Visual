@@ -19,4 +19,3 @@ TODOs:
 - Can it be embedded on webpage? Else screenshot + Link
 - Make switch between different systems available in UI
 - Split view to compare different combinations
-- License and stuff
