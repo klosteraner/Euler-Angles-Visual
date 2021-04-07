@@ -9,9 +9,10 @@ from mayavi.tools.mlab_scene_model import MlabSceneModel
 from mayavi.core.ui.mayavi_scene import MayaviScene
 
 from AngleControl import AngleControlPanel
-from meshes import generate_camera_mesh, draw_world_with_coordinate_system
-from TaitBryanRotation import yawPitchRollAngles, pix4dOmegaPhiKappaAngles, camera_to_world_rotation_matrix
+from TaitBryanRotation import camera_to_world_rotation_matrix, yawPitchRollAngles, pix4dOmegaPhiKappaAngles
 from WorldSystem import NEDSystem, ENUSystem
+from meshes import generate_camera_mesh
+from draw_scene import draw_world_with_coordinate_system
 
 class Visualization(HasTraits):
     '''
@@ -20,7 +21,7 @@ class Visualization(HasTraits):
     UI elements (slider) and 3D visualization.
     '''
 
-    # Variables:
+    # Rotation variables:
     angles = Instance(AngleControlPanel, ())
     rotation_camera_to_world = Property(observe='angles:angle_applied_first:final, '
                                                 'angles:angle_applied_second:final, '
@@ -31,10 +32,11 @@ class Visualization(HasTraits):
             (np.deg2rad(self.angles.angle_applied_second.final), self.angles.angle_applied_second.definition),
             (np.deg2rad(self.angles.angle_applied_first.final), self.angles.angle_applied_first.definition))
 
-    # GUI
+    # 3D Viewer
     mayavi_scene = Instance(MlabSceneModel, ())
     view3d = Item('mayavi_scene', show_label=False, editor=SceneEditor(scene_class=MayaviScene))
 
+    # Complete GUI
     view = View(view3d,
                 Item('angles', style="custom", show_label=False),
                 Group(Item('rotation_camera_to_world')),
@@ -43,16 +45,16 @@ class Visualization(HasTraits):
     def __init__(self, _euler_angle_definition, world_system, **traits):
         HasTraits.__init__(self)
 
-        # Setup 3D mayavi scene
-        ground_origin = [0, 0, -3]
-        ground_dimensions = [1., 1., 0.2]
-        draw_world_with_coordinate_system(self.mayavi_scene, world_system, ground_origin, ground_dimensions)
-
         # To make calculations easy the camera will be located at [0,0,0]
         self.camera_mesh = generate_camera_mesh()
         self.camera3d = self.mayavi_scene.mlab.triangular_mesh(
             self.camera_mesh.x, self.camera_mesh.y, self.camera_mesh.z, self.camera_mesh.faces,
             opacity=0.5, representation='fancymesh', name='camera')
+
+        # And a world system at [0,0,3]
+        ground_origin = [0, 0, -3]
+        ground_dimensions = [1., 1., 0.2]
+        draw_world_with_coordinate_system(self.mayavi_scene, world_system, ground_origin, ground_dimensions)
 
         # Setup euler angles definition specific control panel
         self.angles.angle_applied_first.definition  = _euler_angle_definition.angles_in_order_applied[0]
@@ -78,10 +80,11 @@ if __name__ == '__main__':
                 corresponding rotation matrix as well as the cameras visual 3D pose
                 w.r.t to an ENU world (scene).
     '''
+
     #euler_angle_definition = pix4dOmegaPhiKappaAngles()
     #world_system = ENUSystem
-
     euler_angle_definition = yawPitchRollAngles()
     world_system = NEDSystem()
+
     visualization = Visualization(euler_angle_definition, world_system)
     visualization.configure_traits()

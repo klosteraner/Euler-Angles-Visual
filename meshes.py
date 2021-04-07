@@ -142,50 +142,9 @@ def z_axis_align(x,y,z, world_axis, origin=array([0,0,0])):
     return origin[0] + x_new, origin[1] + y_new, origin[2] + z_new
 
 
-def draw_ground(mayavi_scene, origin, dimensions):
-    x, y, z = generate_ground_mesh(origin, dimensions)
-    mayavi_scene.mlab.surf(x, y, z)
-
-
-def draw_world_axis(mayavi_scene, world_axis, origin, system_dimension):
+def generate_world_axis_mesh(world_axis, origin, system_dimension):
     '''
     Draw an axis of a world coordinate system using the array mesh
     '''
     x, y, z = generate_arrow_mesh(height = system_dimension)
-    x, y, z = z_axis_align(x, y, z, world_axis=world_axis, origin=origin)
-    mayavi_scene.mlab.mesh(x, y, z, colormap="bone")
-
-    text_position = array(origin, dtype=float, copy=True)
-    if world_axis == 'Up':
-        text_position[2] += system_dimension
-    elif world_axis == 'Down':
-        text_position[2] -= system_dimension
-    elif world_axis == 'East':
-        text_position[0] = text_position[0] + system_dimension
-    elif world_axis == 'West':
-        text_position[0] = text_position[0] - system_dimension
-    elif world_axis == 'North':
-        text_position[1] = text_position[1] + system_dimension
-    elif world_axis == 'South':
-        text_position[1] = text_position[1] - system_dimension
-
-    mayavi_scene.mlab.text3d(text_position[0], text_position[1], text_position[2], world_axis, scale=0.2*system_dimension)
-
-
-def draw_world_with_coordinate_system(mayavi_scene, world_system, ground_origin = [0, 0, -3], ground_dimensions = [1., 1., 0.2]):
-    '''
-    Draw world.
-    To visualize the world we draw a ground mesh and coordinate system indicator.
-    There can be several navigation systems we want to display (ENU, NED),
-    but we want the scene to look the same, only with flipped system indicators.
-    So for the visual scene system we choose ENU convention (it both makes live
-    a little easier and also having z axis looking up (not down) seems intuitive
-    for the visualization)
-    '''
-
-    draw_ground(mayavi_scene, ground_origin, ground_dimensions)
-
-    system_dimension = 1.3 * np.max(ground_dimensions)
-    draw_world_axis(mayavi_scene, world_system.x_axis, ground_origin, system_dimension)
-    draw_world_axis(mayavi_scene, world_system.y_axis, ground_origin, system_dimension)
-    draw_world_axis(mayavi_scene, world_system.z_axis, ground_origin, system_dimension)
+    return z_axis_align(x, y, z, world_axis=world_axis, origin=origin)

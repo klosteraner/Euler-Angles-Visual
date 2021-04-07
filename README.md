@@ -15,7 +15,6 @@ TODOs:
   - possibly explanation visual system <-> world system <-> camera system
   - possibly some theory  
 - clear instructions for install / execution (currently it works on my machine)
-- revisit file structure, in particular consider splitting meshes and drawing
 - text3d seems to have some trouble and throws warnings -> investigate
 - Can it be embedded on webpage? Else screenshot + Link
 - Make switch between different systems available in UI
