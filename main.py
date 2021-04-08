@@ -1,4 +1,5 @@
 import numpy as np
+import warnings
 
 from traits.api import HasTraits, Instance, Property, on_trait_change
 from traitsui.api import View, Item, Group
@@ -45,6 +46,17 @@ class Visualization(HasTraits):
     def __init__(self, _euler_angle_definition, world_system, **traits):
         HasTraits.__init__(self)
 
+        # Setup euler angles definition specific control panel
+        self.angles.angle_applied_first.definition  = _euler_angle_definition.angles_in_order_applied[0]
+        self.angles.angle_applied_second.definition = _euler_angle_definition.angles_in_order_applied[1]
+        self.angles.angle_applied_last.definition   = _euler_angle_definition.angles_in_order_applied[2]
+
+    @on_trait_change('mayavi_scene.activated')
+    def initialize_scene(self):
+        # We setup the scene outside the constructor as mayavi can only
+        # initialize certain scene elements (e.g. text3d) properly after a view
+        # on it is open. https://mayavi.readthedocs.io/en/latest/building_applications.html
+
         # To make calculations easy the camera will be located at [0,0,0]
         self.camera_mesh = generate_camera_mesh()
         self.camera3d = self.mayavi_scene.mlab.triangular_mesh(
@@ -55,12 +67,6 @@ class Visualization(HasTraits):
         ground_origin = [0, 0, -3]
         ground_dimensions = [1., 1., 0.2]
         draw_world_with_coordinate_system(self.mayavi_scene, world_system, ground_origin, ground_dimensions)
-
-        # Setup euler angles definition specific control panel
-        self.angles.angle_applied_first.definition  = _euler_angle_definition.angles_in_order_applied[0]
-        self.angles.angle_applied_second.definition = _euler_angle_definition.angles_in_order_applied[1]
-        self.angles.angle_applied_last.definition   = _euler_angle_definition.angles_in_order_applied[2]
-
 
     @on_trait_change('rotation_camera_to_world')
     def update_plot(self):
@@ -86,5 +92,8 @@ if __name__ == '__main__':
     euler_angle_definition = yawPitchRollAngles()
     world_system = NEDSystem()
 
+    # Numpy <-> Python string comparison problem not yet addressed in mayavi
+    # https://stackoverflow.com/questions/40659212/futurewarning-elementwise-comparison-failed-returning-scalar-but-in-the-futur
+    warnings.simplefilter(action='ignore', category=FutureWarning)
     visualization = Visualization(euler_angle_definition, world_system)
     visualization.configure_traits()
