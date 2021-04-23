@@ -31,7 +31,8 @@ class Visualization(HasTraits):
         return camera_to_world_rotation_matrix(
             (np.deg2rad(self.angles.angle_applied_last.final), self.angles.angle_applied_last.definition),
             (np.deg2rad(self.angles.angle_applied_second.final), self.angles.angle_applied_second.definition),
-            (np.deg2rad(self.angles.angle_applied_first.final), self.angles.angle_applied_first.definition))
+            (np.deg2rad(self.angles.angle_applied_first.final), self.angles.angle_applied_first.definition),
+            self.world_system)
 
     # 3D Viewer
     mayavi_scene = Instance(MlabSceneModel, ())
@@ -45,6 +46,8 @@ class Visualization(HasTraits):
 
     def __init__(self, _euler_angle_definition, world_system, **traits):
         HasTraits.__init__(self)
+
+        self.world_system = world_system
 
         # Setup euler angles definition specific control panel
         self.angles.angle_applied_first.definition  = _euler_angle_definition.angles_in_order_applied[0]
@@ -66,7 +69,7 @@ class Visualization(HasTraits):
         # And a world system at [0,0,3]
         ground_origin = [0, 0, -3]
         ground_dimensions = [1., 1., 0.2]
-        draw_world_with_coordinate_system(self.mayavi_scene, world_system, ground_origin, ground_dimensions)
+        draw_world_with_coordinate_system(self.mayavi_scene, self.world_system, ground_origin, ground_dimensions)
 
     @on_trait_change('rotation_camera_to_world')
     def update_plot(self):
@@ -88,7 +91,7 @@ if __name__ == '__main__':
     '''
 
     #euler_angle_definition = pix4dOmegaPhiKappaAngles()
-    #world_system = ENUSystem
+    #world_system = ENUSystem()
     euler_angle_definition = yawPitchRollAngles()
     world_system = NEDSystem()
 

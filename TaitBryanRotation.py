@@ -2,7 +2,6 @@ from traits.api import HasTraits, Bool, Enum, List, Str
 
 from numpy import array, cos, sin
 
-
 class ElementalRotationDefinition(HasTraits):
     '''
     A definition of an elemental rotation and its angle's name
@@ -101,7 +100,17 @@ def camera_to_world_rotation_around_z(cc_angle = 0):
                   [0.,               0.,             1.]])
 
 
-def elementalRotation(angle_and_definition):
+def world_angle(angle, world_axis):
+    '''
+    Correction on the angle for possibly inverted axes
+    due to the world system definition (w.r.t. the mayavi world system)
+    '''
+    if(world_axis in ['Down', 'West', 'South']):
+        angle = -angle
+    return angle
+
+
+def elemental_rotation(angle_and_definition, worldsystem):
     '''
     Returns an elemental rotation matrix that is used to transform
     a point in camera coordinates to a point in world coordinates
@@ -112,16 +121,17 @@ def elementalRotation(angle_and_definition):
         angle = -angle
 
     if definition.axis == 'around_x':
-        return camera_to_world_rotation_around_x(angle)
+        return camera_to_world_rotation_around_x(world_angle(angle, worldsystem.x_axis))
     if definition.axis == 'around_y':
-        return camera_to_world_rotation_around_y(angle)
+        return camera_to_world_rotation_around_y(world_angle(angle, worldsystem.y_axis))
     if definition.axis == 'around_z':
-        return camera_to_world_rotation_around_z(angle)
+        return camera_to_world_rotation_around_z(world_angle(angle, worldsystem.z_axis))
 
 
 def camera_to_world_rotation_matrix(first_angle_and_definition,
                                     second_angle_and_definition,
-                                    last_angle_and_definition):
+                                    last_angle_and_definition,
+                                    world_system):
     '''
     Compute a rotation matrix that is used to transform
     a point in camera coordinates to a point in world coordinates
@@ -129,6 +139,6 @@ def camera_to_world_rotation_matrix(first_angle_and_definition,
 
     Note: Matrices application order is opposite to reading order
     '''
-    return elementalRotation(last_angle_and_definition).dot(
-            elementalRotation(second_angle_and_definition)).dot(
-                elementalRotation(first_angle_and_definition))
+    return elemental_rotation(last_angle_and_definition, world_system).dot(
+            elemental_rotation(second_angle_and_definition, world_system)).dot(
+                elemental_rotation(first_angle_and_definition, world_system))
