@@ -11,9 +11,9 @@ from mayavi.core.ui.mayavi_scene import MayaviScene
 
 from AngleControl import AngleControlPanel
 from TaitBryanRotation import camera_to_world_rotation_matrix, yawPitchRollAngles, pix4dOmegaPhiKappaAngles
-from WorldSystem import NEDSystem, ENUSystem
-from meshes import generate_camera_mesh
-from draw_scene import draw_world_with_coordinate_system
+from WorldSystem import NED_system, ENU_system, photogrammetric_camera_world_alignment_at_zero
+from draw_scene import draw_world_with_coordinate_system_at_origin, world_origin_to_camera_origin, generate_aligned_camera_mesh
+
 
 class Visualization(HasTraits):
     '''
@@ -44,10 +44,11 @@ class Visualization(HasTraits):
                 Group(Item('rotation_camera_to_world')),
                 resizable=True)
 
-    def __init__(self, _euler_angle_definition, world_system, **traits):
+    def __init__(self, _euler_angle_definition, world_system, camera_world_alignment_at_zero, **traits):
         HasTraits.__init__(self)
 
         self.world_system = world_system
+        self.camera_world_alignment_at_zero = camera_world_alignment_at_zero
 
         # Setup euler angles definition specific control panel
         self.angles.angle_applied_first.definition  = _euler_angle_definition.angles_in_order_applied[0]
@@ -60,16 +61,16 @@ class Visualization(HasTraits):
         # initialize certain scene elements (e.g. text3d) properly after a view
         # on it is open. https://mayavi.readthedocs.io/en/latest/building_applications.html
 
-        # To make calculations easy the camera will be located at [0,0,0]
-        self.camera_mesh = generate_camera_mesh()
-        self.camera3d = self.mayavi_scene.mlab.triangular_mesh(
-            self.camera_mesh.x, self.camera_mesh.y, self.camera_mesh.z, self.camera_mesh.faces,
-            opacity=0.5, representation='fancymesh', name='camera')
+        self.camera_mesh = generate_aligned_camera_mesh(self.world_system, self.camera_world_alignment_at_zero)
+        self.world_to_camera_translation = world_origin_to_camera_origin(world_system)
 
-        # And a world system at [0,0,3]
-        ground_origin = [0, 0, -3]
-        ground_dimensions = [1., 1., 0.2]
-        draw_world_with_coordinate_system(self.mayavi_scene, self.world_system, ground_origin, ground_dimensions)
+        self.camera3d = self.mayavi_scene.mlab.triangular_mesh(
+            self.camera_mesh.x + self.world_to_camera_translation[0],
+            self.camera_mesh.y + self.world_to_camera_translation[1],
+            self.camera_mesh.z + self.world_to_camera_translation[2],
+            self.camera_mesh.faces, opacity=0.5, representation='fancymesh', name='camera')
+
+        draw_world_with_coordinate_system_at_origin(self.mayavi_scene, self.world_system)
 
     @on_trait_change('rotation_camera_to_world')
     def update_plot(self):
@@ -77,7 +78,9 @@ class Visualization(HasTraits):
         # The orientation of the camera mesh will be updated on user input
         x_camera_in_world, y_camera_in_world, z_camera_in_world = \
             (self.rotation_camera_to_world.dot(np.array([self.camera_mesh.x, self.camera_mesh.y, self.camera_mesh.z])))
-        self.camera3d.mlab_source.trait_set(x=x_camera_in_world, y=y_camera_in_world, z=z_camera_in_world)
+        self.camera3d.mlab_source.trait_set(x=x_camera_in_world + self.world_to_camera_translation[0],
+                                            y=y_camera_in_world + self.world_to_camera_translation[1],
+                                            z=z_camera_in_world + self.world_to_camera_translation[2])
 
 
 if __name__ == '__main__':
@@ -90,13 +93,14 @@ if __name__ == '__main__':
                 w.r.t to an ENU world (scene).
     '''
 
-    #euler_angle_definition = pix4dOmegaPhiKappaAngles()
-    #world_system = ENUSystem()
-    euler_angle_definition = yawPitchRollAngles()
-    world_system = NEDSystem()
+    euler_angle_definition = pix4dOmegaPhiKappaAngles()
+    world_system = ENU_system()
+    #euler_angle_definition = yawPitchRollAngles()
+    #world_system = NED_system()
+    camera_world_alignment_at_zero = photogrammetric_camera_world_alignment_at_zero()
 
     # Numpy <-> Python string comparison problem not yet addressed in mayavi
     # https://stackoverflow.com/questions/40659212/futurewarning-elementwise-comparison-failed-returning-scalar-but-in-the-futur
     warnings.simplefilter(action='ignore', category=FutureWarning)
-    visualization = Visualization(euler_angle_definition, world_system)
+    visualization = Visualization(euler_angle_definition, world_system, camera_world_alignment_at_zero)
     visualization.configure_traits()

@@ -5,6 +5,7 @@ import numpy as np
 class TriangleMesh:
     '''
     Used to hold the camera data to be transformed via the UI
+    The data is intended for visualization via mayavi's triangular_mesh()
     '''
     def __init__(self, _x, _y, _z, _faces):
         self.x = _x
@@ -15,16 +16,12 @@ class TriangleMesh:
 
 def generate_camera_mesh(width = 4, height = 3):
     '''
-    Camera mesh living in ENU world (x=east, y=north, z=up) that
-    - has origin at 0
-    - looks down (directed in negative z)
-    - image top is oriented north (directed in positive y, indicated bz extra vertex)
-    - image right(from camera center) is oriented east (directed in positive x)
-    This corresponds to opk = 0, following the official pix4d opk definition.
+    Returns camera mesh with origin at (0,0,0) and
+     x-axis: camera right (looking through the camera)
+     y-axis: camera top (indicated by extra triangle)
+     z-axis: camera back
 
-    The return x,y,z, faces define a triangle mesh and
-    are meant to be used by mayavi's triangular_mesh()
-    TODO: Better indicate camera coordinate system
+    Note: This definition can be used with the OPK(ENU) convention.
     '''
 
     vertices = array([[0., 0., 0.],
@@ -34,7 +31,7 @@ def generate_camera_mesh(width = 4, height = 3):
     faces = array([[0, 1, 2], [0, 2, 3], [0, 3, 4], [0, 4, 1], [1, 4, 5]])
 
     x, y, z = vertices.T
-    x_ratio = width / max(width,height)
+    x_ratio = width / max(width, height)
     y_ratio = height / max(width, height)
     x *= x_ratio
     y *= y_ratio
@@ -42,7 +39,7 @@ def generate_camera_mesh(width = 4, height = 3):
     return TriangleMesh(x,y,z, faces)
 
 
-def generate_ground_mesh(origin, dimensions):
+def generate_ground_mesh(dimensions):
     '''
     Object representing the ENU world scene using origin at the cameras.
 
@@ -50,9 +47,9 @@ def generate_ground_mesh(origin, dimensions):
     are meant to be used by mayavi's surf()
     '''
 
-    x,y = mgrid[origin[0] - dimensions[0] : origin[0] + dimensions[0] : 0.1,
-                origin[1] - dimensions[1] : origin[1] + dimensions[1] : 0.1]
-    z = origin[2] + dimensions[2] * cos(x)*sin(-3.*y)
+    x,y = mgrid[-dimensions[0] : dimensions[0] : 0.1,
+                -dimensions[1] : dimensions[1] : 0.1]
+    z = dimensions[2] * cos(x)*sin(-3.*y)
 
     return x,y,z
 
@@ -101,50 +98,3 @@ def generate_arrow_mesh(height = 1.):
     z_cone = height_cyl + height_cone * z_cone
 
     return np.concatenate((x_cyl, x_cone), axis=0), np.concatenate((y_cyl, y_cone), axis=0), np.concatenate((z_cyl, z_cone), axis=0)
-
-
-def z_axis_align(x,y,z, world_axis, origin=array([0,0,0])):
-    '''
-    Applies coordinate transformation on x,y,z,
-    s.t. z axis is swapped with axis given by world_axis
-    and the coordinates are translated to the origin.
-
-    Used place the 3 coordinate system axes.
-    '''
-
-    # 1. Orientation
-    if world_axis == 'Up':
-        x_new = x
-        y_new = y
-        z_new = z
-    elif world_axis == 'Down':
-        x_new = x
-        y_new = y
-        z_new = -z
-    elif world_axis == 'East':
-        x_new = z
-        y_new = y
-        z_new = x
-    elif world_axis == 'West':
-        x_new = -z
-        y_new = y
-        z_new = x
-    elif world_axis == 'North':
-        x_new = x
-        y_new = z
-        z_new = y
-    elif world_axis == 'South':
-        x_new = x
-        y_new = -z
-        z_new = y
-
-    # 2. Translation to world origin
-    return origin[0] + x_new, origin[1] + y_new, origin[2] + z_new
-
-
-def generate_world_axis_mesh(world_axis, origin, system_dimension):
-    '''
-    Draw an axis of a world coordinate system using the array mesh
-    '''
-    x, y, z = generate_arrow_mesh(height = system_dimension)
-    return z_axis_align(x, y, z, world_axis=world_axis, origin=origin)
