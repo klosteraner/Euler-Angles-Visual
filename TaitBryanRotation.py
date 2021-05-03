@@ -22,7 +22,7 @@ class TaitBryanAnglesDefinition(HasTraits):
     angles_in_order_applied = List(ElementalRotationDefinition)
 
 
-def yawPitchRollAngles():
+def angles_yaw_pitch_roll():
     '''
     Returns a definition of the "Yaw, Pitch, Roll" Tait-Bryan angles set widespread in aerospace applications.
     '''
@@ -40,7 +40,7 @@ def yawPitchRollAngles():
     return definition
 
 
-def pix4dOmegaPhiKappaAngles():
+def angles_pix4d_omega_phi_kappa():
     '''
     Returns a definition of the "Omega, Phi, Kappa" Tait-Bryan angles set used by pix4d.
     '''

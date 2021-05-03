@@ -12,7 +12,7 @@ class WorldSystem(HasTraits):
     z_axis = WorldAxis()
 
 
-def NED_system():
+def system_NED():
     world_system = WorldSystem()
     world_system.x_axis = 'North'
     world_system.y_axis = 'East'
@@ -21,7 +21,7 @@ def NED_system():
     return world_system
 
 
-def ENU_system():
+def system_ENU():
     world_system = WorldSystem()
     world_system.x_axis = 'East'
     world_system.y_axis = 'North'
@@ -29,7 +29,7 @@ def ENU_system():
 
     return world_system
 
-def photogrammetric_camera_world_alignment_at_zero():
+def camera_world_alignment_at_zero_photogrammetric():
     '''
     Assuming the photogrammetric camera system:
     x-axis: camera right (looking through the camera)

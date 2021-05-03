@@ -10,9 +10,11 @@ from mayavi.tools.mlab_scene_model import MlabSceneModel
 from mayavi.core.ui.mayavi_scene import MayaviScene
 
 from AngleControl import AngleControlPanel
-from TaitBryanRotation import camera_to_world_rotation_matrix, yawPitchRollAngles, pix4dOmegaPhiKappaAngles
-from WorldSystem import NED_system, ENU_system, photogrammetric_camera_world_alignment_at_zero
-from draw_scene import draw_world_with_coordinate_system_at_origin, world_origin_to_camera_origin, generate_aligned_camera_mesh
+from TaitBryanRotation import camera_to_world_rotation_matrix, angles_yaw_pitch_roll, angles_pix4d_omega_phi_kappa
+from WorldSystem import system_NED, system_ENU, camera_world_alignment_at_zero_photogrammetric
+from draw_scene import draw_world_with_coordinate_system_at_origin, \
+        world_origin_to_camera_origin, generate_aligned_camera_mesh, \
+        initial_view_pix4d_omega_phi_kappa, initial_view_yaw_pitch_roll
 
 
 class Visualization(HasTraits):
@@ -44,11 +46,12 @@ class Visualization(HasTraits):
                 Group(Item('rotation_camera_to_world')),
                 resizable=True)
 
-    def __init__(self, _euler_angle_definition, world_system, camera_world_alignment_at_zero, **traits):
+    def __init__(self, _euler_angle_definition, world_system, camera_world_alignment_at_zero, initial_view, **traits):
         HasTraits.__init__(self)
 
         self.world_system = world_system
         self.camera_world_alignment_at_zero = camera_world_alignment_at_zero
+        self.initial_view = initial_view
 
         # Setup euler angles definition specific control panel
         self.angles.angle_applied_first.definition  = _euler_angle_definition.angles_in_order_applied[0]
@@ -72,6 +75,8 @@ class Visualization(HasTraits):
 
         draw_world_with_coordinate_system_at_origin(self.mayavi_scene, self.world_system)
 
+        self.mayavi_scene.mlab.view(azimuth=initial_view[0], elevation=initial_view[1], roll=initial_view[2], distance=10)
+
     @on_trait_change('rotation_camera_to_world')
     def update_plot(self):
 
@@ -93,14 +98,18 @@ if __name__ == '__main__':
                 w.r.t to an ENU world (scene).
     '''
 
-    euler_angle_definition = pix4dOmegaPhiKappaAngles()
-    world_system = ENU_system()
-    #euler_angle_definition = yawPitchRollAngles()
-    #world_system = NED_system()
-    camera_world_alignment_at_zero = photogrammetric_camera_world_alignment_at_zero()
+    euler_angle_definition = angles_pix4d_omega_phi_kappa()
+    world_system = system_ENU()
+    initial_view = initial_view_pix4d_omega_phi_kappa()
+
+    #euler_angle_definition = angles_yaw_pitch_roll()
+    #world_system = system_NED()
+    #initial_view = initial_view_yaw_pitch_roll()
+
+    camera_world_alignment_at_zero = camera_world_alignment_at_zero_photogrammetric()
 
     # Numpy <-> Python string comparison problem not yet addressed in mayavi
     # https://stackoverflow.com/questions/40659212/futurewarning-elementwise-comparison-failed-returning-scalar-but-in-the-futur
     warnings.simplefilter(action='ignore', category=FutureWarning)
-    visualization = Visualization(euler_angle_definition, world_system, camera_world_alignment_at_zero)
+    visualization = Visualization(euler_angle_definition, world_system, camera_world_alignment_at_zero, initial_view)
     visualization.configure_traits()

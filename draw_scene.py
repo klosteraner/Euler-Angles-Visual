@@ -3,6 +3,30 @@ from numpy import max, array, identity, dot
 from meshes import generate_arrow_mesh, generate_ground_mesh, generate_camera_mesh
 
 
+def initial_view_yaw_pitch_roll():
+    '''
+    Return azimuth, elevation and roll
+    for initial view on scene, s.t.
+    - Up points up
+    - North points in viewing direction
+    - East points rights
+    Intended to be used in mayavi's mlab.view
+    '''
+    return -30, -120, -100
+
+
+def initial_view_pix4d_omega_phi_kappa():
+    '''
+    Return azimuth, elevation and roll
+    for initial view on scene, s.t.
+    - Up points up
+    - North points in viewing direction
+    - East points rights
+    Intended to be used in mayavi's mlab.view
+    '''
+    return -70, 60, -40
+
+
 def w_c(world_axis, camera_axis):
     '''
     Computes an entry w_i*c_i of the transformation matrix
