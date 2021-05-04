@@ -76,6 +76,10 @@ class Visualization(HasTraits):
         draw_world_with_coordinate_system_at_origin(self.mayavi_scene, self.world_system)
 
         self.mayavi_scene.mlab.view(azimuth=initial_view[0], elevation=initial_view[1], roll=initial_view[2], distance=10)
+        self.mayavi_scene.mlab.text(0,0, "camera system: \n"
+                                         "x: camera right \n"
+                                         "y: camera top (indicated by hat) \n"
+                                         "z: camera back (indicated by pyramid)")
 
     @on_trait_change('rotation_camera_to_world')
     def update_plot(self):

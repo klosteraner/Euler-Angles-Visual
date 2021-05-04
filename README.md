@@ -72,4 +72,3 @@ and some substantial integration work. I will also leave this to a future me.
 
 TODOs:
 - clear instructions for install / execution (currently it works on my machine)
-- Indicate camera coordinate system
