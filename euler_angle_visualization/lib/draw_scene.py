@@ -1,7 +1,6 @@
 from numpy import max, array, identity, dot
 
-from meshes import generate_arrow_mesh, generate_ground_mesh, generate_camera_mesh
-
+from lib.meshes import generate_arrow_mesh, generate_ground_mesh, generate_camera_mesh
 
 def initial_view_yaw_pitch_roll():
     '''

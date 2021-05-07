@@ -9,6 +9,20 @@ as well as how the rotation order influences the final rotation.
 
 Currently Yaw-Pitch-Roll and OPK (Pix4D) can be visualized.
 
+## Installation
+
+The app (and dependencies) can be installed from the root directory via 
+
+`pip install .`
+
+and subsequently run via 
+
+`euler_angle_visualization`
+
+After installing the required dependencies it can also be run via
+
+`python euler_angle_visualization/euler_angle_visualization.py`
+
 ## What for ?
 
 I am often confronted with rotations via numbers, euler angle parametrizations.
@@ -69,6 +83,3 @@ For this project I stopped at that point and skipped this part.
 Another interesting feature would be to embed the program on a webpage. The Mayavi documentation
 does not talk about this. I assume a realization of this feature would require another dependency
 and some substantial integration work. I will also leave this to a future me.
-
-TODOs:
-- clear instructions for install / execution (currently it works on my machine)

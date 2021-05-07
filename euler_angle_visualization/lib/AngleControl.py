@@ -1,7 +1,7 @@
 from traits.api import HasTraits, CInt, Instance, Property, Range
 from traitsui.api import View, Group, HGroup, Item
 
-from TaitBryanRotation import ElementalRotationDefinition
+from lib.TaitBryanRotation import ElementalRotationDefinition
 
 
 class AngleControl(HasTraits):

@@ -9,12 +9,12 @@ from tvtk.pyface.scene_editor import SceneEditor
 from mayavi.tools.mlab_scene_model import MlabSceneModel
 from mayavi.core.ui.mayavi_scene import MayaviScene
 
-from AngleControl import AngleControlPanel
-from TaitBryanRotation import camera_to_world_rotation_matrix, angles_yaw_pitch_roll, angles_pix4d_omega_phi_kappa
-from WorldSystem import system_NED, system_ENU, camera_world_alignment_at_zero_photogrammetric
-from draw_scene import draw_world_with_coordinate_system_at_origin, \
+from lib.AngleControl import AngleControlPanel
+from lib.TaitBryanRotation import camera_to_world_rotation_matrix, angles_pix4d_omega_phi_kappa
+from lib.WorldSystem import system_ENU, camera_world_alignment_at_zero_photogrammetric
+from lib.draw_scene import draw_world_with_coordinate_system_at_origin, \
         world_origin_to_camera_origin, generate_aligned_camera_mesh, \
-        initial_view_pix4d_omega_phi_kappa, initial_view_yaw_pitch_roll
+        initial_view_pix4d_omega_phi_kappa
 
 
 class Visualization(HasTraits):
@@ -65,7 +65,7 @@ class Visualization(HasTraits):
         # on it is open. https://mayavi.readthedocs.io/en/latest/building_applications.html
 
         self.camera_mesh = generate_aligned_camera_mesh(self.world_system, self.camera_world_alignment_at_zero)
-        self.world_to_camera_translation = world_origin_to_camera_origin(world_system)
+        self.world_to_camera_translation = world_origin_to_camera_origin(self.world_system)
 
         self.camera3d = self.mayavi_scene.mlab.triangular_mesh(
             self.camera_mesh.x + self.world_to_camera_translation[0],
@@ -75,7 +75,7 @@ class Visualization(HasTraits):
 
         draw_world_with_coordinate_system_at_origin(self.mayavi_scene, self.world_system)
 
-        self.mayavi_scene.mlab.view(azimuth=initial_view[0], elevation=initial_view[1], roll=initial_view[2], distance=10)
+        self.mayavi_scene.mlab.view(azimuth=self.initial_view[0], elevation=self.initial_view[1], roll=self.initial_view[2], distance=10)
         self.mayavi_scene.mlab.text(0,0, "camera system: \n"
                                          "x: camera right \n"
                                          "y: camera top (indicated by hat) \n"
@@ -92,7 +92,7 @@ class Visualization(HasTraits):
                                             z=z_camera_in_world + self.world_to_camera_translation[2])
 
 
-if __name__ == '__main__':
+def run():
     '''
     Version 1:  Visualize Euler Angles (YPR, Pix4D OPK) on simple camera mesh.
 
@@ -117,3 +117,6 @@ if __name__ == '__main__':
     warnings.simplefilter(action='ignore', category=FutureWarning)
     visualization = Visualization(euler_angle_definition, world_system, camera_world_alignment_at_zero, initial_view)
     visualization.configure_traits()
+
+if __name__ == '__main__':
+    run()
