@@ -40,6 +40,7 @@ on the same axis if Phi=90°.
 Other features I have in mind and may implement in the future:
 - Make switch between different systems available in UI
 - Split view to compare different combinations
+- other parametrizations, e.g. exponential map
 
 ## Coordinate systems
 
