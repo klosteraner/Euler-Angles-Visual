@@ -1,5 +1,6 @@
 import numpy as np
 import warnings
+import argparse
 
 from traits.api import HasTraits, Instance, Property, on_trait_change
 from traitsui.api import View, Item, Group
@@ -10,11 +11,11 @@ from mayavi.tools.mlab_scene_model import MlabSceneModel
 from mayavi.core.ui.mayavi_scene import MayaviScene
 
 from lib.AngleControl import AngleControlPanel
-from lib.TaitBryanRotation import camera_to_world_rotation_matrix, angles_pix4d_omega_phi_kappa
-from lib.WorldSystem import system_ENU, camera_world_alignment_at_zero_photogrammetric
+from lib.TaitBryanRotation import camera_to_world_rotation_matrix, angles_yaw_pitch_roll, angles_pix4d_omega_phi_kappa
+from lib.WorldSystem import system_NED, system_ENU, camera_world_alignment_at_zero_photogrammetric
 from lib.draw_scene import draw_world_with_coordinate_system_at_origin, \
         world_origin_to_camera_origin, generate_aligned_camera_mesh, \
-        initial_view_pix4d_omega_phi_kappa
+        initial_view_yaw_pitch_roll, initial_view_pix4d_omega_phi_kappa
 
 
 class Visualization(HasTraits):
@@ -102,13 +103,19 @@ def run():
                 w.r.t to an ENU world (scene).
     '''
 
-    euler_angle_definition = angles_pix4d_omega_phi_kappa()
-    world_system = system_ENU()
-    initial_view = initial_view_pix4d_omega_phi_kappa()
+    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument('-c', '--convention', default='ypr', choices=['ypr', 'opk'],
+                        help='sum the integers (default: find the max)')
+    args = parser.parse_args()
 
-    #euler_angle_definition = angles_yaw_pitch_roll()
-    #world_system = system_NED()
-    #initial_view = initial_view_yaw_pitch_roll()
+    if args.convention == 'ypr':
+        euler_angle_definition = angles_yaw_pitch_roll()
+        world_system = system_NED()
+        initial_view = initial_view_yaw_pitch_roll()
+    elif args.convention == 'opk':
+        euler_angle_definition = angles_pix4d_omega_phi_kappa()
+        world_system = system_ENU()
+        initial_view = initial_view_pix4d_omega_phi_kappa()
 
     camera_world_alignment_at_zero = camera_world_alignment_at_zero_photogrammetric()
 
