@@ -84,3 +84,8 @@ For this project I stopped at that point and skipped this part.
 Another interesting feature would be to embed the program on a webpage. The Mayavi documentation
 does not talk about this. I assume a realization of this feature would require another dependency
 and some substantial integration work. I will also leave this to a future me.
+
+## Next 
+
+- choose conventions in the GUI
+- Split view for comparison
